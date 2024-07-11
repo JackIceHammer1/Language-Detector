@@ -1,5 +1,6 @@
 from pygments.lexers import guess_lexer, get_lexer_by_name
 from pygments.util import ClassNotFound
+from langdetect import detect, LangDetectException
 
 def detect_language(code):
     try:
@@ -11,10 +12,29 @@ def detect_language(code):
 
     return language
 
+def detect_human_language(text):
+    try:
+        # Detect the human language
+        language = detect(text)
+    except LangDetectException:
+        language = "Unknown"
+
+    return language
+
 if __name__ == "__main__":
-    # Read code input from the user
-    code_snippet = input("Enter the code snippet: ")
+    # Read input from the user
+    user_input = input("Enter the text or code snippet: ")
     
-    # Detect and print the language for the provided code snippet
-    language = detect_language(code_snippet)
-    print(f"The detected programming language is: {language}")
+    # Detect programming language
+    prog_language = detect_language(user_input)
+    
+    # Detect human communication language
+    human_language = detect_human_language(user_input)
+    
+    # Determine and print the type of language detected
+    if prog_language != "Unknown":
+        print(f"The detected programming language is: {prog_language}")
+    elif human_language != "Unknown":
+        print(f"The detected human communication language is: {human_language}")
+    else:
+        print("The language could not be detected.")
