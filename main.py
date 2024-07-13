@@ -11,7 +11,7 @@ DetectorFactory.seed = 0
 language_database = {
     "python": [
         "def fetch_data(url):", "import requests", "for i in range(1, 11):", "if __name__ == '__main__':",
-        "with open('file.txt') as f:", "try: except Exception as e:"
+        "with open('file.txt') as f:", "try: except Exception as e:", "print(", "def main():"
     ],
     "sql": [
         "SELECT id, name FROM users WHERE active = 1;", "INSERT INTO orders (user_id, product_id, quantity) VALUES (?, ?, ?);",
@@ -19,11 +19,11 @@ language_database = {
     ],
     "html": [
         "<div class='container'>", "<form action='/submit' method='post'>", "<input type='text' name='username'>",
-        "<button type='submit'>Submit</button>", "<link rel='stylesheet' href='styles.css'>"
+        "<button type='submit'>Submit</button>", "<link rel='stylesheet' href='styles.css'>", "<header>"
     ],
     "java": [
         "public class User {", "private String name;", "public static void main(String[] args) {",
-        "System.out.println('Welcome');", "List<String> names = new ArrayList<>();"
+        "System.out.println('Welcome');", "List<String> names = new ArrayList<>();", "public static"
     ],
     "javascript": [
         "function fetchData(url) {", "document.getElementById('submit').addEventListener('click', function() {",
@@ -120,18 +120,24 @@ def identify_language_with_confidence(text):
         # Try to identify the language using Pygments (code detection)
         lexer = guess_lexer(text)
         language = lexer.name.lower()
-        confidence = 1.0  # Pygments doesn't provide confidence scores
-        logging.info(f"Pygments identified language: {language} with confidence {confidence}")
+        if language in language_database:
+            confidence = 1.0  # Pygments doesn't provide confidence scores
+            logging.info(f"Pygments identified language: {language} with confidence {confidence}")
+            return language, confidence
+        else:
+            logging.warning(f"Pygments identified language '{language}' not found in database, falling back to natural language detection.")
     except ClassNotFound:
-        # If Pygments fails, try using langdetect (natural language detection)
-        try:
-            detected_languages = detect_langs(text)
-            language = detected_languages[0].lang
-            confidence = detected_languages[0].prob
-            logging.info(f"langdetect identified language: {language} with confidence {confidence}")
-        except LangDetectException:
-            logging.error("Language could not be identified.")
-            return None, None
+        logging.warning("Pygments failed to identify language, falling back to natural language detection.")
+
+    # If Pygments fails or the language is not in the database, use langdetect
+    try:
+        detected_languages = detect_langs(text)
+        language = detected_languages[0].lang
+        confidence = detected_languages[0].prob
+        logging.info(f"langdetect identified language: {language} with confidence {confidence}")
+    except LangDetectException:
+        logging.error("Language could not be identified.")
+        return None, None
     
     # Map natural language codes to full names if necessary
     language_map = {
@@ -217,12 +223,12 @@ def main():
     logging.basicConfig(level=logging.INFO)
     
     while True:
-        user_input = input("Enter your text (or 'help' for instructions, 'exit' to quit): ").strip().lower()
+        user_input = input("Enter your text (or 'help' for instructions, 'exit' to quit): ").strip()
         
-        if user_input == 'help':
+        if user_input.lower() == 'help':
             show_help()
             continue
-        elif user_input == 'exit':
+        elif user_input.lower() == 'exit':
             break
         
         detected_language, confidence = identify_language_with_confidence(user_input)
