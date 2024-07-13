@@ -182,6 +182,15 @@ def check_common_errors(code_snippet):
         errors.append("Did you mean 'import ...' instead of 'import(...)'?")
     return errors
 
+# User feedback mechanism
+def get_user_feedback(detected_language, confidence):
+    """
+    Get feedback from the user about the accuracy of the detected language.
+    """
+    print(f"Detected language: {detected_language} with confidence {confidence:.2f}")
+    feedback = input("Is this correct? (yes/no): ").strip().lower()
+    return feedback == 'yes'
+
 def show_help():
     """
     Display help and documentation on how to use the script.
