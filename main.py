@@ -171,6 +171,17 @@ def find_closest_language(language):
         logging.warning(f"No close match found for language: {language}")
         return None
 
+def check_common_errors(code_snippet):
+    """
+    Check for common errors in the given code snippet and return suggestions.
+    """
+    errors = []
+    if 'print ' in code_snippet and not code_snippet.startswith("print("):
+        errors.append("Did you mean print(...)?")
+    if 'import ' in code_snippet and 'import(' in code_snippet:
+        errors.append("Did you mean 'import ...' instead of 'import(...)'?")
+    return errors
+
 def show_help():
     """
     Display help and documentation on how to use the script.
@@ -180,6 +191,7 @@ def show_help():
     print("  - Enter your text or code snippet when prompted.")
     print("  - The script will identify the language and provide relevant code snippets.")
     print("  - If the language detection is not accurate, it will suggest the closest match for confirmation.")
+    print("  - In case of any error, the script will provide guidance on what to do next.")
     print("Languages supported:")
     print("  - Programming languages: Python, SQL, HTML, Java, JavaScript, C, C++, C#, Ruby, PHP, Go, Swift, Kotlin, R, MATLAB, Perl, Bash, TypeScript")
     print("  - Natural languages: English, Spanish, French, German, Chinese, Japanese")
@@ -190,7 +202,8 @@ def show_help():
 
 def main():
     """
-    Main function to identify language, provide code snippets, handle user input for confirmation, and show help.
+    Main function to identify language, provide code snippets, handle user input for confirmation, show help,
+    and handle errors with suggestions.
     """
     logging.basicConfig(level=logging.INFO)
     
@@ -213,6 +226,10 @@ def main():
                 print(f"Code snippets for {detected_language}:")
                 for snippet in snippets:
                     print(f"- {snippet}")
+                    errors = check_common_errors(snippet)
+                    if errors:
+                        for error in errors:
+                            print(f"Error: {error}")
             else:
                 print(f"No snippets found for {detected_language}.")
                 closest_language = find_closest_language(detected_language)
@@ -224,10 +241,14 @@ def main():
                             print(f"Code snippets for {closest_language}:")
                             for snippet in snippets:
                                 print(f"- {snippet}")
+                                errors = check_common_errors(snippet)
+                                if errors:
+                                    for error in errors:
+                                        print(f"Error: {error}")
                     else:
                         print("No matching language found.")
         else:
-            print("Could not detect the language of the text.")
+            print("Could not detect the language of the text. Please try entering a different text or check the input for any errors.")
 
 if __name__ == "__main__":
     main()
