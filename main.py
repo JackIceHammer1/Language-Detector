@@ -171,34 +171,63 @@ def find_closest_language(language):
         logging.warning(f"No close match found for language: {language}")
         return None
 
+def show_help():
+    """
+    Display help and documentation on how to use the script.
+    """
+    print("Language and Code Snippet Identifier")
+    print("Usage:")
+    print("  - Enter your text or code snippet when prompted.")
+    print("  - The script will identify the language and provide relevant code snippets.")
+    print("  - If the language detection is not accurate, it will suggest the closest match for confirmation.")
+    print("Languages supported:")
+    print("  - Programming languages: Python, SQL, HTML, Java, JavaScript, C, C++, C#, Ruby, PHP, Go, Swift, Kotlin, R, MATLAB, Perl, Bash, TypeScript")
+    print("  - Natural languages: English, Spanish, French, German, Chinese, Japanese")
+    print("Examples of usage:")
+    print("  - Entering 'def my_function():' will detect Python and provide related snippets.")
+    print("  - Entering 'SELECT * FROM users;' will detect SQL and provide related snippets.")
+    print("  - Entering 'Hello, how are you?' will detect English and provide common phrases.")
+
 def main():
     """
-    Main function to identify language and provide code snippets.
+    Main function to identify language, provide code snippets, handle user input for confirmation, and show help.
     """
-    sample_text = input("Enter your text: ")
-
-    detected_language, confidence = identify_language_with_confidence(sample_text)
+    logging.basicConfig(level=logging.INFO)
     
-    if detected_language:
-        print(f"Detected language: {detected_language} with confidence {confidence:.2f}")
-        snippets = get_code_snippets(detected_language)
+    while True:
+        user_input = input("Enter your text (or 'help' for instructions, 'exit' to quit): ").strip().lower()
         
-        if snippets:
-            print(f"Code snippets for {detected_language}:")
-            for snippet in snippets:
-                print(f"- {snippet}")
+        if user_input == 'help':
+            show_help()
+            continue
+        elif user_input == 'exit':
+            break
+        
+        detected_language, confidence = identify_language_with_confidence(user_input)
+        
+        if detected_language:
+            print(f"Detected language: {detected_language} with confidence {confidence:.2f}")
+            snippets = get_code_snippets(detected_language)
+            
+            if snippets:
+                print(f"Code snippets for {detected_language}:")
+                for snippet in snippets:
+                    print(f"- {snippet}")
+            else:
+                print(f"No snippets found for {detected_language}.")
+                closest_language = find_closest_language(detected_language)
+                if closest_language:
+                    confirmation = input(f"Did you mean: {closest_language}? (yes/no): ")
+                    if confirmation.lower() == 'yes':
+                        snippets = get_code_snippets(closest_language)
+                        if snippets:
+                            print(f"Code snippets for {closest_language}:")
+                            for snippet in snippets:
+                                print(f"- {snippet}")
+                    else:
+                        print("No matching language found.")
         else:
-            print(f"No snippets found for {detected_language}.")
-            closest_language = find_closest_language(detected_language)
-            if closest_language:
-                print(f"Did you mean: {closest_language}?")
-                snippets = get_code_snippets(closest_language)
-                if snippets:
-                    print(f"Code snippets for {closest_language}:")
-                    for snippet in snippets:
-                        print(f"- {snippet}")
-    else:
-        print("Could not detect the language of the text.")
+            print("Could not detect the language of the text.")
 
 if __name__ == "__main__":
     main()
